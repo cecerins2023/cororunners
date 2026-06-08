@@ -36,10 +36,31 @@ const upload = multer({ storage: multer.memoryStorage() });
 // Registrar corredor
 app.post('/api/register', upload.single('capture'), async (req, res) => {
     try {
-        const { nombre, apellido, cedula, telefono, correo, club, talla, referencia } = req.body;
+        const { nombre, apellido, cedula, telefono, correo, club, talla, referencia, categoria } = req.body;
         
         if (!req.file) {
             return res.status(400).json({ error: 'La imagen de captura es obligatoria' });
+        }
+        
+        if (!categoria) {
+            return res.status(400).json({ error: 'Debe seleccionar una categoría de participación' });
+        }
+
+        // Validar cupos por categoría
+        const limit = categoria === 'Carrera 10K' ? 100 : (categoria === 'Caminata 5K' ? 200 : 0);
+        if (limit === 0) {
+            return res.status(400).json({ error: 'Categoría inválida' });
+        }
+
+        const { count, error: countError } = await supabase
+            .from('runners')
+            .select('*', { count: 'exact', head: true })
+            .eq('categoria', categoria);
+
+        if (countError) throw countError;
+
+        if (count >= limit) {
+            return res.status(400).json({ error: `Lo sentimos, los cupos para la ${categoria} se han agotado. Límite alcanzado (${limit}).` });
         }
 
         // Generar código único aleatorio
@@ -70,7 +91,7 @@ app.post('/api/register', upload.single('capture'), async (req, res) => {
         const { data: runnerData, error: dbError } = await supabase
             .from('runners')
             .insert([
-                { codigo, nombre, apellido, cedula, telefono, correo, club, talla, referencia, capturePath }
+                { codigo, nombre, apellido, cedula, telefono, correo, club, talla, referencia, capturePath, categoria }
             ])
             .select();
 
@@ -159,6 +180,29 @@ app.post('/api/validate', async (req, res) => {
     } catch (error) {
         console.error("Error validando:", error);
         res.status(500).json({ error: 'Hubo un error procesando la validación en Supabase' });
+    }
+});
+app.get('/api/capacities', async (req, res) => {
+    try {
+        const { count: count10k, error: err10k } = await supabase
+            .from('runners')
+            .select('*', { count: 'exact', head: true })
+            .eq('categoria', 'Carrera 10K');
+            
+        const { count: count5k, error: err5k } = await supabase
+            .from('runners')
+            .select('*', { count: 'exact', head: true })
+            .eq('categoria', 'Caminata 5K');
+
+        if (err10k || err5k) throw new Error('Error al obtener contadores');
+
+        res.json({
+            carrera10kFull: count10k >= 100,
+            caminata5kFull: count5k >= 200
+        });
+    } catch (error) {
+        console.error("Error obteniendo cupos:", error);
+        res.status(500).json({ error: 'Error obteniendo cupos' });
     }
 });
 

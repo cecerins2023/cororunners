@@ -1,25 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
-    // 1. Contador Animado de Corredores Inscritos
-    const targetCount = 1245; // Número simulado de corredores
-    const countElement = document.getElementById('runners-count');
-    let currentCount = 0;
-    const duration = 2500; // 2.5 segundos
-    const fps = 60;
-    const increment = targetCount / (duration / (1000 / fps));
-
-    function updateCounter() {
-        currentCount += increment;
-        if (currentCount < targetCount) {
-            countElement.textContent = Math.floor(currentCount).toLocaleString();
-            requestAnimationFrame(updateCounter);
-        } else {
-            countElement.textContent = targetCount.toLocaleString();
-        }
-    }
-    setTimeout(updateCounter, 500); // Iniciar la animación medio segundo después de cargar
-
-    // 2. Lógica de la Cuenta Regresiva (27 de Julio 2026)
-    const eventDate = new Date('July 27, 2026 06:00:00').getTime();
+    // 2. Lógica de la Cuenta Regresiva (19 de Julio 2026, 6:30 AM)
+    const eventDate = new Date('July 19, 2026 06:30:00').getTime();
     
     function updateCountdown() {
         const now = new Date().getTime();
@@ -46,6 +27,44 @@ document.addEventListener('DOMContentLoaded', () => {
     
     updateCountdown(); // Ejecutar inmediato
     setInterval(updateCountdown, 1000); // Actualizar cada segundo
+
+    // 2.5 Verificación de cupos de categorías
+    async function checkCapacities() {
+        try {
+            const res = await fetch('/api/capacities');
+            const data = await res.json();
+            
+            if (data.carrera10kFull) {
+                const radio10k = document.querySelector('input[value="Carrera 10K"]');
+                if (radio10k) {
+                    radio10k.disabled = true;
+                    radio10k.parentElement.style.opacity = '0.5';
+                    radio10k.parentElement.style.cursor = 'not-allowed';
+                    const status10k = document.getElementById('status-10k');
+                    if (status10k) {
+                        status10k.textContent = 'Esta categoría no tiene cupos disponibles';
+                        status10k.style.display = 'block';
+                    }
+                }
+            }
+            if (data.caminata5kFull) {
+                const radio5k = document.querySelector('input[value="Caminata 5K"]');
+                if (radio5k) {
+                    radio5k.disabled = true;
+                    radio5k.parentElement.style.opacity = '0.5';
+                    radio5k.parentElement.style.cursor = 'not-allowed';
+                    const status5k = document.getElementById('status-5k');
+                    if (status5k) {
+                        status5k.textContent = 'Esta categoría no tiene cupos disponibles';
+                        status5k.style.display = 'block';
+                    }
+                }
+            }
+        } catch (error) {
+            console.error('Error al verificar cupos:', error);
+        }
+    }
+    checkCapacities();
 
     // 3. Lógica del Drag and Drop y File Input para el comprobante
     const fileDropArea = document.getElementById('file-drop-area');

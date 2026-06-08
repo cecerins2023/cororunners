@@ -99,16 +99,20 @@ body {
 }
 
 .header {
-    text-align: left;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
 
 .event-logo {
-    max-width: 180px;
-    margin-bottom: 1rem;
-    border-radius: 12px;
-    box-shadow: 0 10px 25px rgba(0,0,0,0.4);
-    background: #fff; /* Fondo blanco si el logo lo necesita para resaltar más */
-    padding: 5px;
+    max-width: 160px;
+    margin-bottom: 1.5rem;
+    border-radius: 50%;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    background: #fff;
+    padding: 8px;
+    object-fit: cover;
 }
 
 .event-title {
@@ -116,19 +120,23 @@ body {
     font-weight: 800;
     color: #fff;
     text-transform: uppercase;
-    line-height: 1;
-    margin-bottom: 0.5rem;
+    line-height: 1.1;
+    margin-bottom: 0.8rem;
     text-shadow: 3px 3px 0px var(--orange), 0 0 20px rgba(249, 115, 22, 0.5);
     display: flex;
     align-items: center;
+    justify-content: center;
+    text-align: center;
 }
 
 .event-subtitle {
     font-size: 1.2rem;
     font-weight: 600;
     color: var(--accent);
-    letter-spacing: 3px;
+    letter-spacing: 2px;
     text-transform: uppercase;
+    text-align: center;
+    line-height: 1.4;
 }
 
 /* Stats (Counter & Price) */
@@ -157,10 +165,10 @@ body {
 }
 
 .stat-number {
-    font-size: 2rem;
+    font-size: 1.8rem;
     font-weight: 800;
     color: #fff;
-    line-height: 1;
+    line-height: 1.1;
 }
 
 .stat-label {
