@@ -211,3 +211,5 @@ app.listen(PORT, () => {
     console.log(`🚀 SERVIDOR LISTO Y CONECTADO A SUPABASE (PUERTO ${PORT})`);
     console.log(`====================================================`);
 });
+
+module.exports = app;
