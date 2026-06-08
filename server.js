@@ -10,8 +10,8 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 app.use(cors());
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 // Servir archivos estáticos del frontend
 app.use(express.static(__dirname));
@@ -21,7 +21,14 @@ app.use(express.static(__dirname));
 // ==========================================
 const supabaseUrl = process.env.SUPABASE_URL;
 const supabaseKey = process.env.SUPABASE_KEY;
-const supabase = createClient(supabaseUrl, supabaseKey);
+let supabase = null;
+try {
+    if (supabaseUrl && supabaseKey) {
+        supabase = createClient(supabaseUrl, supabaseKey);
+    }
+} catch (e) {
+    console.error("Error inicializando Supabase:", e);
+}
 
 // ==========================================
 // CONFIGURACIÓN DE MULTER (Memoria)
@@ -34,11 +41,14 @@ const upload = multer({ storage: multer.memoryStorage() });
 // ==========================================
 
 // Registrar corredor
-app.post('/api/register', upload.single('capture'), async (req, res) => {
+app.post('/api/register', async (req, res) => {
     try {
-        const { nombre, apellido, cedula, telefono, correo, club, talla, referencia, categoria } = req.body;
+        if (!supabase) {
+            return res.status(500).json({ error: 'Supabase no está configurado. Revisa las variables de entorno en Vercel (SUPABASE_URL y SUPABASE_KEY).' });
+        }
+        const { nombre, apellido, cedula, telefono, correo, club, talla, referencia, categoria, captureBase64 } = req.body;
         
-        if (!req.file) {
+        if (!captureBase64) {
             return res.status(400).json({ error: 'La imagen de captura es obligatoria' });
         }
         
@@ -67,14 +77,20 @@ app.post('/api/register', upload.single('capture'), async (req, res) => {
         const randomStr = Math.random().toString(36).substring(2, 8).toUpperCase();
         const codigo = `CR-${randomStr}`;
 
+        // Obtener buffer y mime type desde Base64
+        const base64Data = captureBase64.replace(/^data:image\/\w+;base64,/, "");
+        const buffer = Buffer.from(base64Data, 'base64');
+        const mimeMatch = captureBase64.match(/^data:(image\/\w+);base64,/);
+        const mimeType = mimeMatch ? mimeMatch[1] : 'image/jpeg';
+        const fileExt = mimeType.split('/')[1] || 'jpg';
+
         // Subir imagen a Supabase Storage (Bucket 'captures')
-        const fileExt = req.file.originalname.split('.').pop();
         const fileName = `${Date.now()}-${codigo}.${fileExt}`;
         
         const { data: uploadData, error: uploadError } = await supabase.storage
             .from('captures')
-            .upload(fileName, req.file.buffer, {
-                contentType: req.file.mimetype,
+            .upload(fileName, buffer, {
+                contentType: mimeType,
                 upsert: false
             });
 
@@ -107,6 +123,7 @@ app.post('/api/register', upload.single('capture'), async (req, res) => {
 // Obtener corredores para el admin
 app.get('/api/runners', async (req, res) => {
     try {
+        if (!supabase) throw new Error('Supabase no está configurado');
         const { data, error } = await supabase
             .from('runners')
             .select('*')
@@ -124,6 +141,7 @@ app.get('/api/runners', async (req, res) => {
 // Validar pago y enviar correo
 app.post('/api/validate', async (req, res) => {
     try {
+        if (!supabase) throw new Error('Supabase no está configurado');
         const { id } = req.body;
         
         // Obtener el corredor para sacar su correo
@@ -184,6 +202,9 @@ app.post('/api/validate', async (req, res) => {
 });
 app.get('/api/capacities', async (req, res) => {
     try {
+        if (!supabase) {
+            return res.json({ carrera10kFull: false, caminata5kFull: false });
+        }
         const { count: count10k, error: err10k } = await supabase
             .from('runners')
             .select('*', { count: 'exact', head: true })
@@ -213,3 +234,11 @@ app.listen(PORT, () => {
 });
 
 module.exports = app;
+
+// Configuración especial para Vercel: desactiva el bodyParser por defecto
+// para que Multer pueda leer el 'FormData' (la imagen) sin quedarse colgado.
+module.exports.config = {
+    api: {
+        bodyParser: false,
+    },
+};

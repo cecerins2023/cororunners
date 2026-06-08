@@ -139,12 +139,21 @@ document.addEventListener('DOMContentLoaded', () => {
         
         // Empaquetar todos los datos e imágenes automáticamente
         const formData = new FormData(form);
+        const dataObj = Object.fromEntries(formData.entries());
+
+        // La imagen ya está en base64 en el preview gracias a FileReader
+        if (imagePreview.src && !imagePreview.classList.contains('hidden')) {
+            dataObj.captureBase64 = imagePreview.src;
+        }
 
         try {
-            // Enviar datos al backend real
+            // Enviar datos al backend real como JSON
             const response = await fetch('/api/register', {
                 method: 'POST',
-                body: formData
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(dataObj)
             });
 
             const result = await response.json();
