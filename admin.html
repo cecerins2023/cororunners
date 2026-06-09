@@ -56,7 +56,9 @@
                 <tr>
                     <th>Código</th>
                     <th>Corredor</th>
-                    <th>Categoría</th>
+                    <th>Modalidad</th>
+                    <th>Cat. Edad</th>
+                    <th>Edad/Sex</th>
                     <th>Cédula</th>
                     <th>Teléfono</th>
                     <th>Talla</th>
@@ -96,6 +98,8 @@
                         <td><strong>${runner.codigo}</strong></td>
                         <td>${runner.nombre} ${runner.apellido}<br><small style="color:#64748b">${runner.correo}</small></td>
                         <td><span class="badge" style="background:#e0e7ff; color:#4f46e5;">${runner.categoria || 'N/A'}</span></td>
+                        <td><span class="badge" style="background:#fef3c7; color:#d97706;">${runner.categoria_edad || 'N/A'}</span></td>
+                        <td>${runner.edad || '-'} / ${runner.genero ? runner.genero.charAt(0) : '-'}</td>
                         <td>${runner.cedula}</td>
                         <td>${runner.telefono}</td>
                         <td><strong>${runner.talla}</strong></td>

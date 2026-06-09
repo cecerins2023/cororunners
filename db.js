@@ -12,12 +12,16 @@ db.serialize(() => {
         nombre TEXT,
         apellido TEXT,
         cedula TEXT,
+        edad INTEGER,
+        genero TEXT,
+        categoria_edad TEXT,
         telefono TEXT,
         correo TEXT,
         club TEXT,
         talla TEXT,
         referencia TEXT,
         capturePath TEXT,
+        categoria TEXT,
         estadoPago TEXT DEFAULT 'Pendiente',
         fechaRegistro DATETIME DEFAULT CURRENT_TIMESTAMP
     )`);

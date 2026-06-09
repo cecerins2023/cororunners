@@ -46,7 +46,7 @@ app.post('/api/register', async (req, res) => {
         if (!supabase) {
             return res.status(500).json({ error: 'Supabase no está configurado. Revisa las variables de entorno en Vercel (SUPABASE_URL y SUPABASE_KEY).' });
         }
-        const { nombre, apellido, cedula, telefono, correo, club, talla, referencia, categoria, captureBase64 } = req.body;
+        const { nombre, apellido, cedula, edad, genero, telefono, correo, club, talla, referencia, categoria, captureBase64 } = req.body;
         
         if (!captureBase64) {
             return res.status(400).json({ error: 'La imagen de captura es obligatoria' });
@@ -54,6 +54,17 @@ app.post('/api/register', async (req, res) => {
         
         if (!categoria) {
             return res.status(400).json({ error: 'Debe seleccionar una categoría de participación' });
+        }
+
+        let categoria_edad = 'Sin Categoría';
+        if (edad && genero) {
+            const e = parseInt(edad);
+            if (e >= 16 && e <= 19) categoria_edad = `Juvenil ${genero}`;
+            else if (e >= 20 && e <= 29) categoria_edad = `Libre ${genero}`;
+            else if (e >= 30 && e <= 39) categoria_edad = `Sub Master ${genero}`;
+            else if (e >= 40 && e <= 49) categoria_edad = `Master A ${genero}`;
+            else if (e >= 50 && e <= 59) categoria_edad = `Master B ${genero}`;
+            else if (e >= 60) categoria_edad = `Master C ${genero}`;
         }
 
         // Validar cupos por categoría
@@ -107,7 +118,7 @@ app.post('/api/register', async (req, res) => {
         const { data: runnerData, error: dbError } = await supabase
             .from('runners')
             .insert([
-                { codigo, nombre, apellido, cedula, telefono, correo, club, talla, referencia, capturePath, categoria }
+                { codigo, nombre, apellido, cedula, edad, genero, categoria_edad, telefono, correo, club, talla, referencia, capturePath, categoria }
             ])
             .select();
 
