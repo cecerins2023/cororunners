@@ -211,6 +211,55 @@ app.post('/api/validate', async (req, res) => {
         res.status(500).json({ error: 'Hubo un error procesando la validación en Supabase' });
     }
 });
+
+// Editar corredor
+app.put('/api/runners/:id', async (req, res) => {
+    try {
+        if (!supabase) throw new Error('Supabase no está configurado');
+        const { id } = req.params;
+        const updates = req.body;
+        
+        const { error: updateError } = await supabase
+            .from('runners')
+            .update({
+                nombre: updates.nombre,
+                apellido: updates.apellido,
+                cedula: updates.cedula,
+                telefono: updates.telefono,
+                categoria: updates.categoria,
+                categoria_edad: updates.categoria_edad,
+                edad: updates.edad,
+                genero: updates.genero,
+                talla: updates.talla
+            })
+            .eq('id', id);
+
+        if (updateError) throw updateError;
+        res.json({ success: true, message: 'Corredor actualizado correctamente.' });
+    } catch (error) {
+        console.error("Error actualizando corredor:", error);
+        res.status(500).json({ error: 'Error actualizando corredor' });
+    }
+});
+
+// Eliminar corredor
+app.delete('/api/runners/:id', async (req, res) => {
+    try {
+        if (!supabase) throw new Error('Supabase no está configurado');
+        const { id } = req.params;
+        
+        const { error: deleteError } = await supabase
+            .from('runners')
+            .delete()
+            .eq('id', id);
+
+        if (deleteError) throw deleteError;
+        res.json({ success: true, message: 'Corredor eliminado correctamente.' });
+    } catch (error) {
+        console.error("Error eliminando corredor:", error);
+        res.status(500).json({ error: 'Error eliminando corredor' });
+    }
+});
 app.get('/api/capacities', async (req, res) => {
     try {
         if (!supabase) {

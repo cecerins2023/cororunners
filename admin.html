@@ -9,9 +9,6 @@
         body { font-family: 'Outfit', sans-serif; background: #f8fafc; padding: 30px; color: #1e293b; margin: 0; }
         .admin-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
         .admin-header h1 { color: #ea580c; margin: 0; font-size: 2.5rem; font-weight: 800; }
-        .stats-box { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); text-align: center; }
-        .stats-box span { display: block; font-size: 2rem; font-weight: 800; color: #0cb4b6; }
-        .stats-box p { margin: 5px 0 0; color: #64748b; font-weight: 600; text-transform: uppercase; font-size: 0.8rem; }
         
         .table-container { background: white; padding: 20px; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); overflow-x: auto; }
         table { width: 100%; border-collapse: collapse; }
@@ -31,20 +28,112 @@
         .btn-validate:hover { background: #059669; }
         .btn-export { background: #f59e0b; color: white; padding: 12px 20px; font-size: 1rem; }
         
-        /* Modal para ver imagen */
-        .capture-modal { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.85); z-index: 100; justify-content: center; align-items: center; }
+        /* Modales */
+        .capture-modal, .edit-modal { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.85); z-index: 100; justify-content: center; align-items: center; }
         .capture-modal img { max-width: 90%; max-height: 90%; border-radius: 12px; box-shadow: 0 20px 40px rgba(0,0,0,0.5); }
-        .close-capture { position: absolute; top: 30px; right: 40px; color: white; font-size: 40px; cursor: pointer; font-weight: 800; }
+        .close-capture, .close-edit { position: absolute; top: 30px; right: 40px; color: white; font-size: 40px; cursor: pointer; font-weight: 800; }
+        
+        .edit-modal-content { background: white; padding: 30px; border-radius: 16px; width: 90%; max-width: 500px; max-height: 90vh; overflow-y: auto; }
+        .edit-modal-content h2 { margin-top: 0; color: #1e293b; }
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 5px; font-weight: 600; font-size: 0.9rem; }
+        .form-group input, .form-group select { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 8px; box-sizing: border-box; }
+        .form-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; }
+
+        .btn-edit { background: #6366f1; color: white; margin-right: 5px; margin-bottom: 5px; }
+        .btn-edit:hover { background: #4f46e5; }
+        .btn-delete { background: #ef4444; color: white; margin-bottom: 5px; }
+        .btn-delete:hover { background: #dc2626; }
+
+        .filters-row { display: flex; gap: 15px; flex-wrap: wrap; margin-top: 15px; align-items: center; }
+        .filters-row input, .filters-row select { padding: 10px; border-radius: 8px; border: 1px solid #cbd5e1; font-family: 'Outfit', sans-serif; font-size: 0.95rem; }
+        .filters-row input[type="text"] { min-width: 250px; }
+
+        .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; width: 100%; max-width: 600px; }
+        .stats-box { background: white; padding: 15px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); text-align: center; border: 1px solid transparent; }
+        .stats-box span { display: block; font-size: 1.8rem; font-weight: 800; color: #0cb4b6; }
+        .stats-box p { margin: 5px 0 0; color: #64748b; font-weight: 600; text-transform: uppercase; font-size: 0.75rem; }
+        .stats-box.warning { background: #fef2f2; border-color: #ef4444; }
+        .stats-box.warning span { color: #ef4444; }
+        .stats-box.warning p { color: #b91c1c; }
+
+        tr.row-pendiente { background-color: #fffbeb !important; }
+        tr.row-pendiente:hover { background-color: #fef3c7 !important; }
+
+        /* Toast Notifications */
+        .toast-container { position: fixed; bottom: 20px; right: 20px; z-index: 1000; display: flex; flex-direction: column; gap: 10px; }
+        .toast { background: white; border-left: 4px solid #3b82f6; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); padding: 15px 20px; border-radius: 8px; font-weight: 600; font-size: 0.9rem; animation: slideIn 0.3s ease-out forwards; max-width: 300px; }
+        .toast.warning { border-left-color: #ef4444; }
+        .toast.info { border-left-color: #10b981; }
+        @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+        @keyframes fadeOut { from { opacity: 1; } to { opacity: 0; } }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .admin-header { flex-direction: column; align-items: flex-start; gap: 15px; }
+            .admin-header > div { flex-direction: column; align-items: flex-start; width: 100%; }
+            .stats-grid { grid-template-columns: 1fr; gap: 10px; }
+            .btn-export { width: 100%; }
+            .table-container { padding: 10px; }
+            td, th { padding: 10px 5px; font-size: 0.85rem; }
+            .btn { padding: 6px 10px; font-size: 0.75rem; }
+            .filters-row input, .filters-row select { width: 100%; }
+        }
+
+        /* Print Styles */
+        @media print {
+            @page { size: letter landscape; margin: 10mm; }
+            body { background: white; padding: 0; color: black; font-family: Arial, sans-serif; }
+            .admin-header { display: flex; flex-direction: row !important; justify-content: space-between; align-items: flex-end; margin-bottom: 15px; }
+            .admin-header h1 { font-size: 1.5rem; color: black; margin: 0; }
+            .stats-box { box-shadow: none; border: 1px solid #000; padding: 5px 15px; border-radius: 0; }
+            .stats-box span { font-size: 1.2rem; color: #000; }
+            .stats-box p { font-size: 0.7rem; color: #000; }
+            .btn, .filter-container, .actions-column { display: none !important; }
+            .table-container { box-shadow: none; padding: 0; overflow: visible !important; }
+            table { width: 100%; font-size: 9pt; border-collapse: collapse; }
+            th, td { padding: 6px 4px; border: 1px solid #000; color: black; text-align: left; word-wrap: break-word; }
+            th { background: #e5e5e5 !important; font-size: 8pt; font-weight: bold; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            td { font-size: 9pt; }
+            td small { color: #333 !important; }
+            .badge { border: none; background: transparent !important; color: black !important; padding: 0; font-weight: normal; }
+        }
     </style>
 </head>
 <body>
 
     <div class="admin-header">
-        <h1>Dashboard - Inscripciones</h1>
-        <div style="display: flex; gap: 20px; align-items: center;">
-            <div class="stats-box">
-                <span id="total-count">0</span>
-                <p>Total Inscritos</p>
+        <div>
+            <h1>Dashboard - Inscripciones</h1>
+            <div class="filters-row">
+                <input type="text" id="search-filter" placeholder="Buscar por Nombre, Cédula o Código..." onkeyup="filterRunners()">
+                <select id="modalidad-filter" onchange="filterRunners()">
+                    <option value="Todos">Todas las Modalidades</option>
+                    <option value="Carrera 10K">Carrera 10K</option>
+                    <option value="Caminata 5K">Caminata 5K</option>
+                </select>
+                <select id="estado-filter" onchange="filterRunners()">
+                    <option value="Todos">Todos los Estados</option>
+                    <option value="Validado">Validados</option>
+                    <option value="Pendiente">Pendientes</option>
+                </select>
+                <button class="btn btn-view" onclick="fetchRunners()" style="padding: 10px 15px;">↻ Actualizar Datos</button>
+            </div>
+        </div>
+        <div style="display: flex; gap: 20px; align-items: center; flex-direction: column;">
+            <div class="stats-grid">
+                <div class="stats-box" id="stats-total">
+                    <span id="total-count">0</span>
+                    <p>Total Listados</p>
+                </div>
+                <div class="stats-box" id="stats-10k">
+                    <span id="count-10k">0/100</span>
+                    <p>Cupos 10K</p>
+                </div>
+                <div class="stats-box" id="stats-5k">
+                    <span id="count-5k">0/200</span>
+                    <p>Cupos 5K</p>
+                </div>
             </div>
             <button class="btn btn-export" onclick="window.print()">Exportar PDF / Imprimir Listado</button>
         </div>
@@ -54,6 +143,7 @@
         <table id="runners-table">
             <thead>
                 <tr>
+                    <th>#</th>
                     <th>Código</th>
                     <th>Corredor</th>
                     <th>Modalidad</th>
@@ -65,7 +155,7 @@
                     <th>Ref. Pago</th>
                     <th>Fecha</th>
                     <th>Estado</th>
-                    <th>Acciones</th>
+                    <th class="actions-column">Acciones</th>
                 </tr>
             </thead>
             <tbody>
@@ -79,43 +169,182 @@
         <img id="capture-img" src="" alt="Capture de Pago">
     </div>
 
+    <div class="toast-container" id="toast-container"></div>
+
+    <div class="edit-modal" id="edit-modal">
+        <span class="close-edit" onclick="closeEditModal()">×</span>
+        <div class="edit-modal-content">
+            <h2>Editar Corredor</h2>
+            <form id="edit-form" onsubmit="submitEdit(event)">
+                <input type="hidden" id="edit-id">
+                <div class="form-group">
+                    <label>Nombre</label>
+                    <input type="text" id="edit-nombre" required>
+                </div>
+                <div class="form-group">
+                    <label>Apellido</label>
+                    <input type="text" id="edit-apellido" required>
+                </div>
+                <div class="form-group">
+                    <label>Cédula</label>
+                    <input type="text" id="edit-cedula" required>
+                </div>
+                <div class="form-group">
+                    <label>Teléfono</label>
+                    <input type="text" id="edit-telefono" required>
+                </div>
+                <div class="form-group">
+                    <label>Modalidad</label>
+                    <select id="edit-categoria" required>
+                        <option value="Carrera 10K">Carrera 10K</option>
+                        <option value="Caminata 5K">Caminata 5K</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Cat. Edad</label>
+                    <input type="text" id="edit-categoria-edad" required>
+                </div>
+                <div class="form-group">
+                    <label>Edad</label>
+                    <input type="number" id="edit-edad" required>
+                </div>
+                <div class="form-group">
+                    <label>Género</label>
+                    <select id="edit-genero" required>
+                        <option value="Masculino">Masculino</option>
+                        <option value="Femenino">Femenino</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Talla de Camisa</label>
+                    <input type="text" id="edit-talla" required>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-view" onclick="closeEditModal()">Cancelar</button>
+                    <button type="submit" class="btn btn-validate">Guardar Cambios</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <script>
+        let allRunners = [];
+
         async function fetchRunners() {
             try {
                 const res = await fetch('/api/runners');
-                const runners = await res.json();
+                allRunners = await res.json();
                 
-                const tbody = document.querySelector('#runners-table tbody');
-                tbody.innerHTML = '';
-                
-                document.getElementById('total-count').innerText = runners.length;
-
-                runners.forEach(runner => {
-                    const date = new Date(runner.fechaRegistro).toLocaleDateString('es-VE', { hour: '2-digit', minute: '2-digit' });
-                    
-                    const tr = document.createElement('tr');
-                    tr.innerHTML = `
-                        <td><strong>${runner.codigo}</strong></td>
-                        <td>${runner.nombre} ${runner.apellido}<br><small style="color:#64748b">${runner.correo}</small></td>
-                        <td><span class="badge" style="background:#e0e7ff; color:#4f46e5;">${runner.categoria || 'N/A'}</span></td>
-                        <td><span class="badge" style="background:#fef3c7; color:#d97706;">${runner.categoria_edad || 'N/A'}</span></td>
-                        <td>${runner.edad || '-'} / ${runner.genero ? runner.genero.charAt(0) : '-'}</td>
-                        <td>${runner.cedula}</td>
-                        <td>${runner.telefono}</td>
-                        <td><strong>${runner.talla}</strong></td>
-                        <td>${runner.referencia}</td>
-                        <td>${date}</td>
-                        <td><span class="badge ${runner.estadoPago.toLowerCase()}">${runner.estadoPago}</span></td>
-                        <td>
-                            <button class="btn btn-view" onclick="viewCapture('${runner.capturePath}')">Ver Capture</button>
-                            ${runner.estadoPago === 'Pendiente' ? `<button class="btn btn-validate" onclick="validatePayment(${runner.id}, '${runner.nombre}')">Validar</button>` : ''}
-                        </td>
-                    `;
-                    tbody.appendChild(tr);
-                });
+                updateMetricsAndAlerts();
+                renderRunners();
             } catch (error) {
                 console.error('Error cargando corredores', error);
+                showToast('Error de conexión cargando datos', 'warning');
             }
+        }
+
+        function updateMetricsAndAlerts() {
+            const count10k = allRunners.filter(r => r.categoria === 'Carrera 10K').length;
+            const count5k = allRunners.filter(r => r.categoria === 'Caminata 5K').length;
+            const pendientes = allRunners.filter(r => r.estadoPago === 'Pendiente').length;
+
+            const box10k = document.getElementById('stats-10k');
+            const span10k = document.getElementById('count-10k');
+            span10k.innerText = `${count10k}/100`;
+            if(count10k >= 90) {
+                box10k.classList.add('warning');
+                box10k.querySelector('p').innerText = count10k >= 100 ? '¡10K AGOTADO!' : '¡10K CASI LLENO!';
+                if(count10k >= 90 && count10k < 100) showToast(`¡Atención! Quedan ${100 - count10k} cupos para 10K.`, 'warning');
+            } else {
+                box10k.classList.remove('warning');
+                box10k.querySelector('p').innerText = `Cupos 10K (Restan ${100 - count10k})`;
+            }
+
+            const box5k = document.getElementById('stats-5k');
+            const span5k = document.getElementById('count-5k');
+            span5k.innerText = `${count5k}/200`;
+            if(count5k >= 180) {
+                box5k.classList.add('warning');
+                box5k.querySelector('p').innerText = count5k >= 200 ? '¡5K AGOTADO!' : '¡5K CASI LLENO!';
+                if(count5k >= 180 && count5k < 200) showToast(`¡Atención! Quedan ${200 - count5k} cupos para 5K.`, 'warning');
+            } else {
+                box5k.classList.remove('warning');
+                box5k.querySelector('p').innerText = `Cupos 5K (Restan ${200 - count5k})`;
+            }
+
+            if(pendientes > 0) {
+                showToast(`Tienes ${pendientes} pagos pendientes por validar.`, 'info');
+            }
+        }
+
+        function filterRunners() {
+            renderRunners();
+        }
+
+        function renderRunners() {
+            const tbody = document.querySelector('#runners-table tbody');
+            tbody.innerHTML = '';
+            
+            const modalidadVal = document.getElementById('modalidad-filter').value;
+            const estadoVal = document.getElementById('estado-filter').value;
+            const searchVal = document.getElementById('search-filter').value.toLowerCase();
+
+            const filteredRunners = allRunners.filter(r => {
+                const matchModalidad = modalidadVal === 'Todos' || r.categoria === modalidadVal;
+                const matchEstado = estadoVal === 'Todos' || r.estadoPago === estadoVal;
+                const matchSearch = searchVal === '' || 
+                                    (r.nombre + ' ' + r.apellido).toLowerCase().includes(searchVal) ||
+                                    r.cedula.toLowerCase().includes(searchVal) ||
+                                    r.codigo.toLowerCase().includes(searchVal);
+                return matchModalidad && matchEstado && matchSearch;
+            });
+
+            document.getElementById('total-count').innerText = filteredRunners.length;
+
+            filteredRunners.forEach((runner, index) => {
+                const date = new Date(runner.fechaRegistro).toLocaleDateString('es-VE', { hour: '2-digit', minute: '2-digit' });
+                const runnerJson = JSON.stringify(runner).replace(/"/g, '&quot;');
+                const isPendiente = runner.estadoPago === 'Pendiente';
+                
+                const tr = document.createElement('tr');
+                if (isPendiente) tr.className = 'row-pendiente';
+
+                tr.innerHTML = `
+                    <td>${index + 1}</td>
+                    <td><strong>${runner.codigo}</strong></td>
+                    <td>${runner.nombre} ${runner.apellido}<br><small style="color:#64748b">${runner.correo}</small></td>
+                    <td><span class="badge" style="background:#e0e7ff; color:#4f46e5;">${runner.categoria || 'N/A'}</span></td>
+                    <td><span class="badge" style="background:#fef3c7; color:#d97706;">${runner.categoria_edad || 'N/A'}</span></td>
+                    <td>${runner.edad || '-'} / ${runner.genero ? runner.genero.charAt(0) : '-'}</td>
+                    <td>${runner.cedula}</td>
+                    <td>${runner.telefono}</td>
+                    <td><strong>${runner.talla}</strong></td>
+                    <td>${runner.referencia}</td>
+                    <td>${date}</td>
+                    <td><span class="badge ${runner.estadoPago.toLowerCase()}">${runner.estadoPago}</span></td>
+                    <td class="actions-column">
+                        <button class="btn btn-view" onclick="viewCapture('${runner.capturePath}')">Ver Capture</button>
+                        ${isPendiente ? `<button class="btn btn-validate" style="margin-bottom:5px;" onclick="validatePayment(${runner.id}, '${runner.nombre}')">Validar</button>` : ''}
+                        <br>
+                        <button class="btn btn-edit" onclick="openEditModal(${runnerJson})">Editar</button>
+                        <button class="btn btn-delete" onclick="deleteRunner(${runner.id}, '${runner.nombre}')">Eliminar</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = \`toast \${type}\`;
+            toast.innerText = message;
+            container.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.style.animation = 'fadeOut 0.3s ease-out forwards';
+                setTimeout(() => toast.remove(), 300);
+            }, 5000);
         }
 
         async function validatePayment(id, nombre) {
@@ -147,6 +376,76 @@
 
         function closeModal() {
             document.getElementById('capture-modal').style.display = 'none';
+        }
+
+        function openEditModal(runner) {
+            document.getElementById('edit-id').value = runner.id;
+            document.getElementById('edit-nombre').value = runner.nombre;
+            document.getElementById('edit-apellido').value = runner.apellido;
+            document.getElementById('edit-cedula').value = runner.cedula;
+            document.getElementById('edit-telefono').value = runner.telefono;
+            document.getElementById('edit-categoria').value = runner.categoria;
+            document.getElementById('edit-categoria-edad').value = runner.categoria_edad;
+            document.getElementById('edit-edad').value = runner.edad;
+            document.getElementById('edit-genero').value = runner.genero;
+            document.getElementById('edit-talla').value = runner.talla;
+            
+            document.getElementById('edit-modal').style.display = 'flex';
+        }
+
+        function closeEditModal() {
+            document.getElementById('edit-modal').style.display = 'none';
+        }
+
+        async function submitEdit(e) {
+            e.preventDefault();
+            const id = document.getElementById('edit-id').value;
+            const updates = {
+                nombre: document.getElementById('edit-nombre').value,
+                apellido: document.getElementById('edit-apellido').value,
+                cedula: document.getElementById('edit-cedula').value,
+                telefono: document.getElementById('edit-telefono').value,
+                categoria: document.getElementById('edit-categoria').value,
+                categoria_edad: document.getElementById('edit-categoria-edad').value,
+                edad: document.getElementById('edit-edad').value,
+                genero: document.getElementById('edit-genero').value,
+                talla: document.getElementById('edit-talla').value
+            };
+
+            try {
+                const res = await fetch(`/api/runners/${id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(updates)
+                });
+                const result = await res.json();
+                if(result.success) {
+                    alert('Corredor actualizado correctamente');
+                    closeEditModal();
+                    fetchRunners();
+                } else {
+                    alert('Error: ' + result.error);
+                }
+            } catch (err) {
+                alert('Error de conexión.');
+            }
+        }
+
+        async function deleteRunner(id, nombre) {
+            if(!confirm(`¿Estás SEGURO de eliminar definitivamente al corredor ${nombre}? Esta acción no se puede deshacer.`)) return;
+            
+            try {
+                const res = await fetch(`/api/runners/${id}`, { method: 'DELETE' });
+                const result = await res.json();
+                if(result.success) {
+                    alert('Corredor eliminado.');
+                    fetchRunners();
+                } else {
+                    alert('Error: ' + result.error);
+                }
+            } catch (err) {
+                alert('Error de conexión.');
+            }
         }
 
         // Cargar datos al iniciar
