@@ -233,8 +233,15 @@
         async function fetchRunners() {
             try {
                 const res = await fetch('/api/runners');
-                allRunners = await res.json();
+                const data = await res.json();
                 
+                if (!Array.isArray(data)) {
+                    console.error('El servidor devolvió un error:', data);
+                    showToast(data.error || 'Error del servidor cargando datos', 'warning');
+                    return;
+                }
+                
+                allRunners = data;
                 updateMetricsAndAlerts();
                 renderRunners();
             } catch (error) {
