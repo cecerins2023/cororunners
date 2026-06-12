@@ -26,7 +26,9 @@
         .btn-view:hover { background: #2563eb; }
         .btn-validate { background: #10b981; color: white; }
         .btn-validate:hover { background: #059669; }
-        .btn-export { background: #f59e0b; color: white; padding: 12px 20px; font-size: 1rem; }
+        .btn-export { background: #f59e0b; color: white; padding: 12px 20px; font-size: 1rem; width: 100%; box-sizing: border-box; }
+        .btn-excel { background: #16a34a; color: white; padding: 12px 20px; font-size: 1rem; width: 100%; box-sizing: border-box; margin-top: 10px; }
+        .btn-excel:hover { background: #15803d; }
         
         /* Modales */
         .capture-modal, .edit-modal { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.85); z-index: 100; justify-content: center; align-items: center; }
@@ -127,15 +129,18 @@
                     <p>Total Listados</p>
                 </div>
                 <div class="stats-box" id="stats-10k">
-                    <span id="count-10k">0/100</span>
+                    <span id="count-10k">0/200</span>
                     <p>Cupos 10K</p>
                 </div>
                 <div class="stats-box" id="stats-5k">
-                    <span id="count-5k">0/200</span>
+                    <span id="count-5k">0/100</span>
                     <p>Cupos 5K</p>
                 </div>
             </div>
-            <button class="btn btn-export" onclick="window.print()">Exportar PDF / Imprimir Listado</button>
+            <div style="display: flex; flex-direction: column; width: 100%; max-width: 600px;">
+                <button class="btn btn-export" onclick="window.print()">Exportar PDF / Imprimir Listado</button>
+                <button class="btn btn-excel" onclick="window.location.href='/api/export-excel'">Exportar a Excel 📊</button>
+            </div>
         </div>
     </div>
 
@@ -246,7 +251,7 @@
                 renderRunners();
             } catch (error) {
                 console.error('Error cargando corredores', error);
-                showToast('Error de conexión cargando datos', 'warning');
+                showToast('Error cargando datos: ' + error.message, 'warning');
             }
         }
 
@@ -257,26 +262,26 @@
 
             const box10k = document.getElementById('stats-10k');
             const span10k = document.getElementById('count-10k');
-            span10k.innerText = `${count10k}/100`;
-            if(count10k >= 90) {
+            span10k.innerText = `${count10k}/200`;
+            if(count10k >= 180) {
                 box10k.classList.add('warning');
-                box10k.querySelector('p').innerText = count10k >= 100 ? '¡10K AGOTADO!' : '¡10K CASI LLENO!';
-                if(count10k >= 90 && count10k < 100) showToast(`¡Atención! Quedan ${100 - count10k} cupos para 10K.`, 'warning');
+                box10k.querySelector('p').innerText = count10k >= 200 ? '¡10K AGOTADO!' : '¡10K CASI LLENO!';
+                if(count10k >= 180 && count10k < 200) showToast(`¡Atención! Quedan ${200 - count10k} cupos para 10K.`, 'warning');
             } else {
                 box10k.classList.remove('warning');
-                box10k.querySelector('p').innerText = `Cupos 10K (Restan ${100 - count10k})`;
+                box10k.querySelector('p').innerText = `Cupos 10K (Restan ${200 - count10k})`;
             }
 
             const box5k = document.getElementById('stats-5k');
             const span5k = document.getElementById('count-5k');
-            span5k.innerText = `${count5k}/200`;
-            if(count5k >= 180) {
+            span5k.innerText = `${count5k}/100`;
+            if(count5k >= 90) {
                 box5k.classList.add('warning');
-                box5k.querySelector('p').innerText = count5k >= 200 ? '¡5K AGOTADO!' : '¡5K CASI LLENO!';
-                if(count5k >= 180 && count5k < 200) showToast(`¡Atención! Quedan ${200 - count5k} cupos para 5K.`, 'warning');
+                box5k.querySelector('p').innerText = count5k >= 100 ? '¡5K AGOTADO!' : '¡5K CASI LLENO!';
+                if(count5k >= 90 && count5k < 100) showToast(`¡Atención! Quedan ${100 - count5k} cupos para 5K.`, 'warning');
             } else {
                 box5k.classList.remove('warning');
-                box5k.querySelector('p').innerText = `Cupos 5K (Restan ${200 - count5k})`;
+                box5k.querySelector('p').innerText = `Cupos 5K (Restan ${100 - count5k})`;
             }
 
             if(pendientes > 0) {
@@ -299,10 +304,15 @@
             const filteredRunners = allRunners.filter(r => {
                 const matchModalidad = modalidadVal === 'Todos' || r.categoria === modalidadVal;
                 const matchEstado = estadoVal === 'Todos' || r.estadoPago === estadoVal;
+                
+                const nombreCompleto = (r.nombre || '') + ' ' + (r.apellido || '');
+                const cedulaStr = r.cedula ? String(r.cedula) : '';
+                const codigoStr = r.codigo ? String(r.codigo) : '';
+
                 const matchSearch = searchVal === '' || 
-                                    (r.nombre + ' ' + r.apellido).toLowerCase().includes(searchVal) ||
-                                    r.cedula.toLowerCase().includes(searchVal) ||
-                                    r.codigo.toLowerCase().includes(searchVal);
+                                    nombreCompleto.toLowerCase().includes(searchVal) ||
+                                    cedulaStr.toLowerCase().includes(searchVal) ||
+                                    codigoStr.toLowerCase().includes(searchVal);
                 return matchModalidad && matchEstado && matchSearch;
             });
 

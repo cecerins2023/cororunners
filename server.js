@@ -5,6 +5,7 @@ const multer = require('multer');
 const { createClient } = require('@supabase/supabase-js');
 const nodemailer = require('nodemailer');
 const path = require('path');
+const ExcelJS = require('exceljs');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -68,7 +69,7 @@ app.post('/api/register', async (req, res) => {
         }
 
         // Validar cupos por categoría
-        const limit = categoria === 'Carrera 10K' ? 100 : (categoria === 'Caminata 5K' ? 200 : 0);
+        const limit = categoria === 'Carrera 10K' ? 200 : (categoria === 'Caminata 5K' ? 100 : 0);
         if (limit === 0) {
             return res.status(400).json({ error: 'Categoría inválida' });
         }
@@ -278,12 +279,116 @@ app.get('/api/capacities', async (req, res) => {
         if (err10k || err5k) throw new Error('Error al obtener contadores');
 
         res.json({
-            carrera10kFull: count10k >= 100,
-            caminata5kFull: count5k >= 200
+            carrera10kFull: count10k >= 200,
+            caminata5kFull: count5k >= 100
         });
     } catch (error) {
         console.error("Error obteniendo cupos:", error);
         res.status(500).json({ error: 'Error obteniendo cupos' });
+    }
+});
+
+app.get('/api/export-excel', async (req, res) => {
+    try {
+        if (!supabase) throw new Error('Supabase no está configurado');
+        const { data: runners, error } = await supabase
+            .from('runners')
+            .select('*')
+            .order('fechaRegistro', { ascending: false });
+            
+        if (error) throw error;
+        
+        const workbook = new ExcelJS.Workbook();
+        workbook.creator = 'Coro Runners';
+        const worksheet = workbook.addWorksheet('Inscripciones', {
+            views: [{ showGridLines: false }]
+        });
+        
+        // Agregar logo
+        try {
+            const logoId = workbook.addImage({
+                filename: path.join(__dirname, 'logo.jpeg'),
+                extension: 'jpeg',
+            });
+            worksheet.addImage(logoId, {
+                tl: { col: 0, row: 0 },
+                ext: { width: 150, height: 150 }
+            });
+        } catch (e) {
+            console.error('Error al cargar el logo para Excel:', e);
+        }
+
+        // Espacio para el logo
+        for(let i=0; i<8; i++) worksheet.addRow([]);
+
+        // Título
+        worksheet.mergeCells('A8:L8');
+        const titleCell = worksheet.getCell('A8');
+        titleCell.value = 'Reporte de Inscripciones - Coro Runners';
+        titleCell.font = { name: 'Arial', size: 16, bold: true, color: { argb: 'FFFFFFFF' } };
+        titleCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFEA580C' } };
+        titleCell.alignment = { horizontal: 'center', vertical: 'middle' };
+
+        worksheet.addRow([]);
+
+        // Columnas
+        worksheet.columns = [
+            { header: 'Código', key: 'codigo', width: 15 },
+            { header: 'Nombre', key: 'nombre', width: 20 },
+            { header: 'Apellido', key: 'apellido', width: 20 },
+            { header: 'Cédula', key: 'cedula', width: 15 },
+            { header: 'Correo', key: 'correo', width: 30 },
+            { header: 'Teléfono', key: 'telefono', width: 15 },
+            { header: 'Modalidad', key: 'categoria', width: 20 },
+            { header: 'Cat. Edad', key: 'categoria_edad', width: 20 },
+            { header: 'Edad', key: 'edad', width: 10 },
+            { header: 'Género', key: 'genero', width: 15 },
+            { header: 'Talla', key: 'talla', width: 10 },
+            { header: 'Estado', key: 'estadoPago', width: 15 }
+        ];
+
+        // Estilos del header
+        const headerRow = worksheet.getRow(10);
+        headerRow.eachCell((cell) => {
+            cell.font = { bold: true, color: { argb: 'FFFFFFFF' } };
+            cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF0CB4B6' } };
+            cell.alignment = { horizontal: 'center', vertical: 'middle' };
+            cell.border = {
+                top: { style: 'thin' },
+                left: { style: 'thin' },
+                bottom: { style: 'thin' },
+                right: { style: 'thin' }
+            };
+        });
+
+        // Filas
+        runners.forEach((runner) => {
+            const row = worksheet.addRow(runner);
+            row.eachCell((cell) => {
+                cell.alignment = { vertical: 'middle' };
+                cell.border = {
+                    top: { style: 'thin' },
+                    left: { style: 'thin' },
+                    bottom: { style: 'thin' },
+                    right: { style: 'thin' }
+                };
+            });
+            // Color alterno para filas
+            if (row.number % 2 === 0) {
+                row.eachCell((cell) => {
+                    cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF8FAFC' } };
+                });
+            }
+        });
+
+        res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        res.setHeader('Content-Disposition', 'attachment; filename=Inscripciones_Coro_Runners.xlsx');
+        
+        await workbook.xlsx.write(res);
+        res.end();
+    } catch (error) {
+        console.error("Error exportando a Excel:", error);
+        res.status(500).json({ error: 'Error exportando a Excel' });
     }
 });
 
